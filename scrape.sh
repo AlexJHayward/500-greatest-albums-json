@@ -26,7 +26,7 @@ execute () {
 		curl "$url" \
 			| grep pmcGalleryExports \
 			| sed "s/var pmcGalleryExports = \(.*\);/\1/" \
-			| jq '[.gallery[] | {"rank": .positionDisplay, "title_artist": .title, "title": (.title|split(", ")[0]), "artist":(.title|split(", ")[1:]|join(", ")), "description": .description, "coverUrl": .image}]' \
+			| jq '[.gallery[] | {"rank": .positionDisplay, "title_artist": .title, "artist": (.title|split(", ")[0]), "title":(.title|split(", ")[1:]|join(", ")), "description": .description, "coverUrl": .image}]' \
 			| sed -e 's/<[^>]*>//g' \
 			| sed 's/\\n//g' \
 			> $CURL_RESULT
