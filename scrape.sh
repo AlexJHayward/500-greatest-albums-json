@@ -20,10 +20,13 @@ get_links () {
 execute () {
 	while read url; do
 		echo $url
+
+		# Break apart artist and title where possible, but then keep them together for checking later 
+
 		curl "$url" \
 			| grep pmcGalleryExports \
 			| sed "s/var pmcGalleryExports = \(.*\);/\1/" \
-			| jq '[.gallery[] | {"rank": .positionDisplay, "title": .title, "description": .description, "coverUrl": .image}]' \
+			| jq '[.gallery[] | {"rank": .positionDisplay, "title_artist": .title, "title": (.title|split(", ")[0]), "artist":(.title|split(", ")[1:]|join(", ")), "description": .description, "coverUrl": .image}]' \
 			| sed -e 's/<[^>]*>//g' \
 			| sed 's/\\n//g' \
 			> $CURL_RESULT
@@ -38,10 +41,10 @@ execute () {
 
 create_csv() {
 	# csv headers
-	echo "rank, title, description, coverUrl" > $OUTPUT_FILE_CSV
+	echo "rank, artist, title, title_artist, description, coverUrl" > $OUTPUT_FILE_CSV
 
 	# csv data
-	jq -r '.[]|[.rank, .title, .description, .coverUrl]|@csv' $OUTPUT_FILE_JSON >> $OUTPUT_FILE_CSV
+	jq -r '.[]|[.rank, .artist, .title, .title_artist, .description, .coverUrl]|@csv' $OUTPUT_FILE_JSON >> $OUTPUT_FILE_CSV
 }
 
 cleanup () {
